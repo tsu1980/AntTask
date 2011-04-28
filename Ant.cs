@@ -29,7 +29,31 @@ namespace AntTask
 
         private string buildFile = DEFAULT_BUILD_FILE;
 
-        private Regex compileWarningRegEx = new Regex(@"^.+?\ \[javac]\ (?<src>.+):(?<line>\d+):\ 警告:(?<msg>.+)$");
+        /// <summary>
+        ///   Regular expressesion used to identify javac compile warning in default ant log.
+        ///   <remarks>This has so far only been tested against the Sun Java compiler</remarks>
+        /// </summary>
+        protected Regex CompileWarningRegEx
+        {
+            get
+            {
+                if (compileWarningRegEx == null)
+                {
+                    switch (Language)
+                    {
+                        case "ja":
+                            compileWarningRegEx = new Regex(@"^.+?\ \[javac]\ (?<src>.+):(?<line>\d+):\ 警告:(?<msg>.+)$");
+                            break;
+                        case "en":
+                        default:
+                            compileWarningRegEx = new Regex(@"^.+?\ \[javac]\ (?<src>.+):(?<line>\d+):\ warning:(?<msg>.+)$");
+                            break;
+                    }
+                }
+                return compileWarningRegEx;
+            }
+        }
+        private Regex compileWarningRegEx;
 
         private bool debug;
         private string inputhandler;
@@ -46,6 +70,7 @@ namespace AntTask
         private string propertyFile;
         private List<string> targets = new List<string>();
         private bool verbose;
+        private string language = "en";
 
         #endregion Privates
 
@@ -100,6 +125,15 @@ namespace AntTask
         {
             get { return verbose; }
             set { verbose = value; }
+        }
+
+        /// <summary>
+        ///   Language for regex used to in ant log
+        /// </summary>
+        public string Language
+        {
+            get { return language; }
+            set { language = value; }
         }
 
         /// <summary>
@@ -314,7 +348,7 @@ namespace AntTask
             }
             else if (singleLine.IndexOf(" [javac] ") > 0)
             {
-                Match match = compileWarningRegEx.Match(singleLine);
+                Match match = CompileWarningRegEx.Match(singleLine);
                 if (match.Success)
                 {
                     Log.LogWarning(match.Groups["msg"].Value);
@@ -372,6 +406,10 @@ namespace AntTask
             if (Debug)
             {
                 commands.Append(" -d");
+            }
+            if (Verbose)
+            {
+                commands.Append(" -v");
             }
             if (!string.IsNullOrEmpty(Lib))
             {
