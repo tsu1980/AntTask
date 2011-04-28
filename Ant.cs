@@ -42,7 +42,7 @@ namespace AntTask
                     switch (Language)
                     {
                         case "ja":
-                            compileWarningRegEx = new Regex(@"^.+?\ \[javac]\ (?<src>.+):(?<line>\d+):\ 警告:(?<msg>.+)$");
+                            compileWarningRegEx = new Regex(@"^.+?\ \[javac]\ (?<src>.+):(?<line>\d+):\ (warning|警告):(?<msg>.+)$");
                             break;
                         case "en":
                         default:
